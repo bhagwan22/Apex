@@ -1,0 +1,71 @@
+
+//STEP 1
+/**********************************************************************************************************************
+* Description    :  UPDATE PATIENT PROFILE PHOTO 
+* Trigger events  :  after insert
+* Helper class    :  Upload_Profile_Photo_Trigger_Helper
+* Test class      :       - 
+* ----------------------------------------------------------------------------------------------------------------------
+* Version      Created By      Created Date    Modified Date    Modified By
+*   01        Bhagwan S      15 May          -          -
+* *********************************************************************************************************************/
+
+trigger ContentDocument_photo_trigger on ContentDocument (after insert) {
+    if(System.label.Profile_Photo_Trigger_check.trim()!='No'){
+        List<String> documentIdList = new List<String>();
+        for(ContentDocument cd : trigger.new){
+            documentIdList.add(cd.id);
+        }
+    // CALLING HEALPER METHOD
+        Upload_Profile_Photo_Trigger_Helper.updatePatientProfile(documentIdList);
+    }
+}
+
+
+// STEP 2
+
+/**********************************************************************************************************************
+* Description    :  ContentDocument_photo_trigger Helper class
+* Trigger events  :  after insert
+* Test class    :       - 
+* ----------------------------------------------------------------------------------------------------------------------
+* Version      Created By      Created Date    Modified Date    Modified By
+*   01        Bhagwan S      18 May          -          -
+* *********************************************************************************************************************/
+public class Upload_Profile_Photo_Trigger_Helper {
+    
+    @future
+    public static void updatePatientProfile(List<String> triggerNEW){
+        Map<String,String> cntntDocIdVsPublicLink = new Map<String,String>();
+        for(ContentVersion cntVrsn : [Select id,ContentDocumentId,Title from ContentVersion where ContentDocumentId IN :triggerNEW AND CreatedDate=Today AND Title like '%PatientPhoto%']){
+            if(cntVrsn.Title.trim().containsIgnoreCase('PatientPhoto')){
+                cntntDocIdVsPublicLink.put(cntVrsn.ContentDocumentId,cntVrsn.id);
+                system.debug('***  FILE NAME => ' + cntVrsn);
+            }
+        }   
+        if(!cntntDocIdVsPublicLink.KeySet().isEmpty()){
+            system.debug('*** PATIENTPHOTO '+cntntDocIdVsPublicLink);
+            Map<String,String> contDocIdVsPatientId = new Map<String,String>();
+            List<Contact> PatientProfileToUpdate_List = new List<Contact>();
+            //MAP PATIENT OT CONTACTDOCUMENT SHARED PUBLICLY
+            for(ContentDocumentLink cdlink :[SELECT id,LinkedEntityId,ContentDocumentId  from ContentDocumentLink where LinkedEntityId!=null AND ContentDocumentId IN: cntntDocIdVsPublicLink.keySet()]){
+                if(String.valueOf(cdlink.LinkedEntityId).startsWith('003')){
+                    Contact patient = new Contact();
+                    patient.id=cdlink.LinkedEntityId;
+                    patient.Profile_URL__c = cntntDocIdVsPublicLink.get(cdlink.ContentDocumentId);
+                    PatientProfileToUpdate_List.add(patient);
+                }
+            }
+            
+            //UPDATE PATIENT PROFILE URL
+            IF(!PatientProfileToUpdate_List.isEmpty()){
+                try{
+                    system.debug('### Updating contact '+PatientProfileToUpdate_List);
+                    update PatientProfileToUpdate_List;
+                }catch(Exception ex){
+                    system.debug('-- EXCEPTION ENCOUNTERED '+ex.getLineNumber()+' message '+ex.getMessage());
+                }
+            }
+        }
+    }
+}
