@@ -1,0 +1,189 @@
+//VF PAGE
+//--------
+<div class="slds-page-header__control">                           
+    <apex:inputFile value="{!csvFileBody}"  filename="{!csvName}" accept=".csv" style="margin-top: 0.5rem; color: green;"/>
+</div>
+
+//CONTROLLER
+//----------
+//STEP 1(VF CONTROLLER CLASS)
+
+public class Inventory_Product_Control {
+    public Id inventorAttId { get; set; }
+    public id activatedAttId { get; set; } 
+    public Blob csvFileBody{get;set;}
+    public string csvName{get;set;}
+    public String[] csvFileLines{get;set;}
+    public List<orderItem> displayInventoryList{get;set;}
+    public String InternalAccountId ='';
+    
+    
+    public Inventory_Product_Control(){
+        system.debug('###### WHEN IT IS CREATED');
+        system.debug('@@@@@ BODY '+csvFileBody);
+        inventorAttId = System.label.InventoryCSV_Id;
+        activatedAttId = System.label.ActiveProductCSV_Id;
+        if(Test.isRunningTest())
+            InternalAccountId= [Select id from account where name='INTERNAL ACCOUNT TEST' Limit 1][0].id;
+        else
+            InternalAccountId = system.Label.InventoryAccount_ID;
+        displayInventoryList = [select id,Product2.Name,Quantity,Barcode__c,State__c,Order.Accountid from OrderItem where Order.Accountid=:InternalAccountId];
+    }    
+    
+    /********************************************************************************************************************************
+* Description     : Call CSV parsing helper methods for Inventory Insert
+* Return Type     : void
+* ------------------------------------------------------------------------------------------------------------------------------
+* Helper method    : Inventory_Product_Helper
+* ******************************************************************************************************************************/
+    public void importCSVFile(){
+        try{
+            String csvBody = '';
+            system.debug('###@@ BLOB VALUE '+csvFileBody);
+            csvBody = csvFileBody.toString();
+            system.debug('###@@ STRING VALUE '+csvBody);
+            system.debug('###@@ STRING BLOB VALUE '+Blob.valueOf(csvBody));
+            List<orderItem> displayInsert = new List<orderItem>();
+            system.debug('#### INVENTORY FILE NAME '+csvName);
+            if(csvBody!='' && csvName=='Inventory_Products.csv'){
+                displayInsert = Inventory_Product_Helper.parseInventoryCSV(csvBody,csvName);
+                csvFileBody=null;
+                csvBody='';
+                csvName='';
+                if(displayInsert.isEmpty()){
+                    ApexPages.addmessage(new ApexPages.message(ApexPages.severity.FATAL,'No Order Item Inserted, Please check CSV'));
+                }
+                else{
+                    if(InternalAccountId.length()>=15){
+                        displayInventoryList = [select id,Product2.Name,Quantity,Barcode__c,State__c,Order.Accountid from OrderItem where Order.Accountid=:InternalAccountId];
+                        ApexPages.addmessage(new ApexPages.message(ApexPages.severity.CONFIRM,'Inventory Updated'));
+                    }
+                }
+            }
+            else{
+                ApexPages.addmessage(new ApexPages.message(ApexPages.severity.FATAL,'Please check file Name')); 
+                csvBody='';
+                csvFileBody=null;
+                csvName='';
+            }
+        }
+        catch (Exception e)
+        {
+            csvFileBody=null;
+            csvName='';
+            system.debug('*** EXCEPTION ENCOUNTER **** '); 
+        }  
+     }
+    }
+    
+    
+    // HELPER CLASS
+    //STEP 2
+********************************************************************************************************************************
+* Description  :  Inventory_Product_Controller Helper. Parse Inventory products and Active one in SF
+* ------------------------------------------------------------------------------------------------------------------------------
+* Version        CreatedDate        Created By        Modified By
+*    01          26 May 2020        Bhagwan S        
+* *****************************************************************************************************************************/
+
+public class Inventory_Product_Helper {
+    public  static Map<string,Integer> headerIndex = new Map<String,Integer>();// Set Dynamic Column Index from CSV
+    public  static String errorCSV = 'PRODUCT,BARCODE,ERROR\n';
+    public  static String successCSV = 'PRODUCT,BARCODE,ORDERITEM ID,SUCCESS\n';
+    public  static List<orderItem> orderItemListToInsert = new List<orderItem>();// Upser/Insert Task
+    public  static Map<String,priceBookEntry> productVsPricebookEntry = new Map<String,priceBookEntry>();
+    
+    /********************************************************************************************************************************
+* Description     : Parse Inventory Products to Salesforce "Internal Account"
+* Return Type     : list<OrderItem> Inserted OrderItem List
+* -----------------------------------------------------------------------------------------------------------------------------
+* Helper method    : No
+* ******************************************************************************************************************************/
+    public static list<OrderItem> parseInventoryCSV(string stringBody,string attachmentName){
+        
+        system.debug('*** BODY '+stringBody);
+        system.debug('*** NAME '+attachmentName);
+        List<String> csvFileLines = new List<String>();
+        List<orderItem> insertedOrderItem = new List<orderItem>();
+        Set<String> duplicateBarcode = new Set<String>();
+        string InternalAccountId = system.Label.InventoryAccount_ID;
+        Order internalAccountOrder = new Order();
+        if(!Test.isRunningTest())
+            internalAccountOrder = [Select id,AccountId from order where AccountId=:InternalAccountId Limit 1];
+        else{
+            InternalAccountId= [Select id from account where name='INTERNAL ACCOUNT TEST' Limit 1][0].id;
+            internalAccountOrder = [Select id,AccountId from order where AccountId=:InternalAccountId Limit 1];
+        }
+
+        if(stringBody!='')
+            csvFileLines = stringBody.split('\n'); 
+        
+        if(!csvFileLines.isEmpty()){
+            // IDENTIFY .CSV HEADDER INDEX
+            integer indexCheck = 0;
+            for(String index : csvFileLines[0].split(',')){
+                if(index.trim()=='Product Name')
+                    headerIndex.put(index.trim(),indexCheck);
+                else if(index.trim() == 'Barcode')
+                    headerIndex.put(index.trim(),indexCheck); 
+                
+                indexCheck++;
+            }
+            System.debug('#### HEADDER MAP SIZE '+headerIndex.keySet().size());
+            System.debug('#### HEADDER MAP '+headerIndex);
+            if(headerIndex.keySet().size()!=2)
+                return insertedOrderItem;
+            
+            //ITERATE CSV ROWS
+            for(Integer i=1;i<csvFileLines.size();i++){
+                system.debug('**ROWS '+i+' ==> '+csvFileLines[i]);
+                List<String> columnList = new List<String>();
+                columnList = csvFileLines[i].split(',');
+                system.debug('### clolumn Size ==> '+columnList.size());
+                orderItem newOItm = new orderItem();
+                
+                //ITERATE CSV COLUMN
+                for(Integer j=0;j<=headerIndex.size();j++){
+                        if(j==headerIndex.get('Barcode')){
+                            //CODE TO ACTION
+                        }
+                        if(j==headerIndex.get('Product Name')){
+                            //CODE TO ACTION                      
+                        }
+                    }
+                //ADD RECORD TO INSET IN LIST
+            }
+        }
+        
+        try{                
+            
+            System.debug('*** INSERTING ORDERITEM');
+            Integer trackerrorRow = 0;
+            Database.SaveResult[] srList = Database.insert(orderItemListToInsert, false); 
+            for (Database.SaveResult sr : srList) {
+                if(sr.isSuccess()){
+                    System.debug('### SUCCESS RESULT ### '+sr);
+                    insertedOrderItem.add(orderItemListToInsert[trackerrorRow]);
+                    successCSV += orderItemListToInsert[trackerrorRow].Product2Id+','+'BARCODE,'+sr.id+',True\n';
+                    trackerrorRow++;
+                }
+                else{
+                    // *** ERROR Tracking 
+                    System.debug('### ERROR ### ');  
+                    for(Database.Error err : sr.getErrors()) {
+                        errorCSV+=orderItemListToInsert[trackerrorRow].Product2Id+','+'BARCODE,'+err.getMessage()+' '+err.getFields()+'\n';
+                        trackerrorRow++;
+                    }
+                }
+            }
+        }
+        catch(Exception ex){
+            System.debug('*** Exception encountered '+ex.getMessage()+' Line No: '+ex.getLineNumber());
+        }
+        
+        system.debug('##### INSERTED ORDER ITEMS '+insertedOrderItem);
+        system.debug('SUCCESS CSV ==> '+successCSV);
+        system.debug('Error CSV ==> '+errorCSV);
+        return insertedOrderItem;
+     }
+}	 
