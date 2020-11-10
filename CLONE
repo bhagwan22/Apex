@@ -1,0 +1,25 @@
+ Map <String, Schema.SObjectField> fieldMap = schemaMap.get(objectAPIName).getDescribe().fields.getMap();
+	System.debug('fieldMap'+fieldMap);
+	for(Schema.SObjectField sof : fieldMap.values()){
+		DescribeFieldResult dfr = sof.getDescribe();
+		if(dfr.isAccessible() &&  dfr.isCreateable()){
+			finalFields.add(dfr.getName());
+		}
+	}
+	
+	// GET EXCLUDED FIELDS FOR SYSTEM
+	list<String> excluded_FieldList = System.Label.Clone_excluded_fields.split(',');
+	
+	if(!finalFields.isEmpty()){
+		for(String fld_name : excluded_FieldList){
+			if(finalFields.indexOf(fld_name)!=null){
+				 finalFields.remove(finalFields.indexOf(fld_name));
+			}
+		}
+	   System.debug('###@@ REFRESHED VALUES '+finalFields); 
+		String query =
+			'SELECT ' + String.join(finalFields, ',')+
+			' FROM ' +objectAPIName +
+			' WHERE Id = \''+recordId+'\'';
+		List<Sobject> parentObj = Database.query(query);
+	}
