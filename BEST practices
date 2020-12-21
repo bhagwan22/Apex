@@ -1,0 +1,9 @@
+# use with sharing on the apex side
+
+# use
+- <sObject>.sObjectType.getDescription()
+isCreateable()
+isAccessible()
+isUpdateable()
+isDeletable()
+
