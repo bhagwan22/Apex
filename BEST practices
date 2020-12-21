@@ -6,4 +6,6 @@ isCreateable()
 isAccessible()
 isUpdateable()
 isDeletable()
-
+Ex:
+if(Account.sObjectType.getDescribe().isAccessible())
+ return true;
