@@ -1,0 +1,9 @@
+public map<string, schema.SObjectType> so = schema.getGlobalDescribe();
+System.debug('@@@ Map '+so);
+Schema.SObjectType selectedObj_Detail = so.get('Account');
+system.debug('#### Account '+selectedObj_Detail);
+Schema.DescribesObjectResult resObjDetails = selectedObj_Detail.getDescribe();
+system.debug('#### Account OBJECT DETAILS '+resObjDetails);
+Map<String,Schema.SObjectField> fieldMap = resObjDetails.fields.getMap();
+system.debug('#### Account OBJECT FIELDS '+fieldMap);
+System.debug('Map Filds size '+fieldMap.values().size());
