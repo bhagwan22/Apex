@@ -1,0 +1,19 @@
+*** GET OBJECT NAME BASED ON ID
+Id recordId = '0066F000018bxx4';
+String objectApiName = recordId.getSObjectType().getDescribe().getName();
+System.debug('@@@@@@@@ '+objectApiName);
+
+
+**** DYNAMIC ALL FIELD QUERRY
+
+Map<String, Schema.SObjectType> mapSobjects = Schema.getGlobalDescribe();
+Map<String, Schema.SObjectField> counterParty_fieldMap = mapSobjects.get('Counterparty__c').getDescribe().fields.getMap();
+List<String> fieldList = new List<String>();
+fieldList.addAll(counterParty_fieldMap.keySet());
+String fieldsString = String.join(fieldList, ',');
+String Query = 'SELECT '+fieldsString+', Company_Name__r.Name, Opportunity__r.Name '+' from Counterparty__c where Opportunity__c=\''+oldProject_Id+'\'';
+
+Map<Id,SObject> mergeTextMap = new Map<Id,SObject>();
+mergeTextMap = new Map<Id,SObject>(Database.query(String.escapeSingleQuotes(query)));
+
+
