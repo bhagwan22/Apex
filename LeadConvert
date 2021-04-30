@@ -1,0 +1,10 @@
+Database.LeadConvert ledConvert = new database.LeadConvert();
+ledConvert.setLeadId(leadId);
+ledConvert.setAccountId(accountId);
+ledConvert.setDoNotCreateOpportunity(true);
+ledConvert.setConvertedStatus('Qualified');
+Database.LeadConvertResult ledConvertResult = Database.convertLead(ledConvert);
+String contactId = ledConvertResult.getContactId();
+Contact con = new Contact();
+con.accountId = ledConvertResult.getAccountId();
+listToUpdateContact.add(con);
