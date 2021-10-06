@@ -1,10 +1,25 @@
-1. with sharing/without sharing(default) => implements the record lever permission
-2. SECURITY_ENFORCE ==> on SOQL act on field and record level
+1. To implements the record lever permission, Sharing rule 
+    => with sharing/without sharing(default) 
+2. TO SOQL for field and object level
+    => SECURITY_ENFORCE 
+    =>schema.sObjectType.Contact.fields.emial.isAccessible()
+      schema.sObjectType.Contact.isDeletable()
+      isCreateable()
+      isAccessible()
+      isDeletable()
+      isInsertable()
+      isUpdatable()
+    => Security.stripInaccessible() : 
+       The method used to remove inaccessible sObject fields before DML operations to avoid exception.
+       The method creates a return list of sObjects that is identical to the source records, except that the fields that are inaccessible to the current user are removed.
+       
+       Exampale:
+       ---------
+        SObjectAccessDecision securityDecision = Security.stripInaccessible(AccessType.READABLE, sourceRecords);
+        Contact c = securityDecision.getRecords()[0];
+        System.debug(c.isSet('social_security_number__c')); // prints "false" if the current login user does not have field permission to social_security_number__c
+       
 
-3. schema.sObjectType.Contact.fields.emial.isAccessible()
-schema.sObjectType.Contact.isDeletable()
-isCreateable()
-isAccessible()
-isDeletable()
-isInsertable()
-isUpdatable()
+Auth.CommunitiesUtil.isInternalUser()
+
+Schema.DescribeSObjectResult
