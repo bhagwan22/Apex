@@ -1,0 +1,10 @@
+1. with sharing/without sharing(default) => implements the record lever permission
+2. SECURITY_ENFORCE ==> on SOQL act on field and record level
+
+3. schema.sObjectType.Contact.fields.emial.isAccessible()
+schema.sObjectType.Contact.isDeletable()
+isCreateable()
+isAccessible()
+isDeletable()
+isInsertable()
+isUpdatable()
