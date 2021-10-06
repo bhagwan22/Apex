@@ -18,7 +18,21 @@
         SObjectAccessDecision securityDecision = Security.stripInaccessible(AccessType.READABLE, sourceRecords);
         Contact c = securityDecision.getRecords()[0];
         System.debug(c.isSet('social_security_number__c')); // prints "false" if the current login user does not have field permission to social_security_number__c
+                                                    OR
+        SObjectAccessDecision securityDecision = Security.stripInaccessible(AccessType.READABLE,[SELECT Name, BudgetedCost, ActualCost FROM Campaign]);
+        if (securityDecision.getRemovedFields().get('Campaign').contains('ActualCost')) {
+            for (Campaign c : securityDecision.getRecords()) {
+            //System.debug Output: Name, BudgetedCost
+            }
+        } else {
+            for (Campaign c : securityDecision.getRecords()) {
+            //System.debug Output: Name, BudgetedCost, ActualCost
+            }
+        }
        
+       Note:
+      -------
+        stripInAccessible does bot work on aggregate results
 
 Auth.CommunitiesUtil.isInternalUser()
 
