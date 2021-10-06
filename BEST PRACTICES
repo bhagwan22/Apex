@@ -34,6 +34,6 @@
       -------
         stripInAccessible does bot work on aggregate results
 
-Auth.CommunitiesUtil.isInternalUser()
+4. Auth.CommunitiesUtil.isInternalUser()
 
-Schema.DescribeSObjectResult
+5. Schema.DescribeSObjectResult
