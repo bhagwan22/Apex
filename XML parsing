@@ -1,0 +1,29 @@
+_________
+## 1
+_________
+String sampleXml = '<?xml version="1.0" encoding="UTF-8"?><breakfast_menu>  <food>    <name>Belgian Waffles</name>    <price>$5.95</price>    <description>Two of our famous Belgian Waffles with plenty of real maple syrup</description>    <calories>650</calories>  </food> </breakfast_menu>';
+Dom.Document domObj = new Dom.Document();
+domObj.load(sampleXml);
+Dom.XMLNode rootElement = domObj.getRootElement(); 
+
+for(Dom.XMLNode xm : rootElement.getChildElements()){
+    for(Dom.XmlNode xmChild : xm.getChildElements()){
+        System.debug('@@@@@ name => '+xmChild.getName()+' - '+xmChild.getText());
+    }
+}
+
+_________
+## 2
+_________
+
+Dom.Document doc = new Dom.Document();
+doc.load(res.getBody());                        
+Dom.XMLNode dataRegister = doc.getRootElement();
+if(dataRegister.getChildElement('INVc', null) != null){
+	for (Dom.XMLNode child: dataRegister.getChildElement('INVc', null).getChildElements()) {
+		if(child.getName() == 'Code'){
+			prod.Ghost_Product_created_on_Hansa__c = True;
+			prod.Hansa_Sync_Error__c = false;                                             
+		}
+	}  
+}
