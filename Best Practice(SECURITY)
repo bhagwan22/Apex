@@ -1,5 +1,6 @@
 1. To implements the record lever permission, Sharing rule 
     => with sharing/without sharing(default) 
+    
 2. TO SOQL for field and object level
     => SECURITY_ENFORCE 
     =>schema.sObjectType.Contact.fields.emial.isAccessible()
